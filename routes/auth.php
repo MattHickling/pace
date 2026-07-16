@@ -35,7 +35,7 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 
-    Route::post('strava-login', [StravaController::class, 'login'])
+    Route::get('strava-login', [StravaController::class, 'login'])
         ->name('strava.login');
 
     Route::get('strava/callback', [StravaController::class, 'callback'])

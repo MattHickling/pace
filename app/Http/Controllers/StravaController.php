@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Strava;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class StravaController extends Controller
 {
@@ -63,19 +64,18 @@ class StravaController extends Controller
         //
     }
 
-    public function login(Request $request)
+    public function login()
     {
-        $request->validate([
-            'code' => ['required', 'string'],
-        ]);
+        $clientId = config('services.strava.client_id');
+        $redirect = config('services.strava.redirect');
 
-        $code = $request->input('code');
+        if (! $clientId || ! $redirect) {
+            abort(500, 'Strava client_id or redirect URI is not configured.');
+        }
 
-    
-        //direct them here
         return redirect()->away(
             "https://www.strava.com/oauth/authorize?client_id={$clientId}" .
-            "&response_type=code&redirect_uri={$redirect}" .
+            "&response_type=code&redirect_uri=" . urlencode($redirect) .
             "&approval_prompt=auto&scope=read,activity:read_all"
         );
     }

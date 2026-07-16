@@ -51,9 +51,6 @@
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('STRAVA Login') }}
-            </x-primary-button>
         </div>
     </form>
 </x-guest-layout>
