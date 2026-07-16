@@ -68,7 +68,7 @@ class StravaController extends Controller
     {
         $clientId = config('services.strava.client_id');
         $redirect = config('services.strava.redirect');
-
+        // dd(__LINE__, $clientId, $redirect);
         if (! $clientId || ! $redirect) {
             abort(500, 'Strava client_id or redirect URI is not configured.');
         }
