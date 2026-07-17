@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Strava;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class StravaController extends Controller
 {
@@ -91,7 +95,43 @@ class StravaController extends Controller
             'grant_type' => 'authorization_code',
         ]);
 
+        if ($response->failed()) {
+            abort(500, 'Strava token request failed: ' . $response->body());
+        }
+
         $data = $response->json();
-        // store access_token / refresh_token / athlete id
+        $athlete = $data['athlete'] ?? [];
+        $athleteId = $athlete['id'] ?? null;
+
+        if (! $athleteId) {
+            abort(500, 'Strava athlete id missing from response.');
+        }
+
+        $user = Auth::user();
+
+        if (! $user) {
+            $email = $athlete['email'] ?? "strava+{$athleteId}@paceapp.co.uk";
+            $name = trim(($athlete['firstname'] ?? '') . ' ' . ($athlete['lastname'] ?? '')) ?: "Strava user {$athleteId}";
+
+            $user = User::firstOrCreate(
+                ['email' => $email],
+                ['name' => $name, 'password' => Hash::make(Str::random(32))]
+            );
+        }
+
+        $strava = Strava::updateOrCreate(
+            ['strava_athlete_id' => $athleteId],
+            [
+                'user_id' => $user->id,
+                'access_token' => $data['access_token'],
+                'refresh_token' => $data['refresh_token'],
+                'expires_at' => $data['expires_at'],
+                'scope' => $data['scope'] ?? null,
+            ]
+        );
+
+        Auth::login($user);
+
+        return redirect()->route('dashboard')->with('status', 'Connected to Strava.');
     }
 }
