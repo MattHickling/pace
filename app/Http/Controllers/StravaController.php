@@ -76,7 +76,7 @@ class StravaController extends Controller
         if (! $clientId || ! $redirect) {
             abort(500, 'Strava client_id or redirect URI is not configured.');
         }
-
+        // dd(__LINE__, $clientId, $redirect);
         return redirect()->away(
             "https://www.strava.com/oauth/authorize?client_id={$clientId}" .
             "&response_type=code&redirect_uri=" . urlencode($redirect) .
@@ -131,7 +131,21 @@ class StravaController extends Controller
         );
 
         Auth::login($user);
-
         return redirect()->route('dashboard')->with('status', 'Connected to Strava.');
+    }
+
+    public function getStravaData()
+    {
+        $user = Auth::user();
+        if (! $user) {
+            abort(403, 'User not authenticated.');
+        }
+
+        $strava = Strava::where('user_id', $user->id)->first();
+        if (! $strava) {
+            abort(404, 'Strava data not found for user.');
+        }
+
+        return response()->json($strava);
     }
 }
