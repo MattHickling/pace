@@ -17,5 +17,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/strava-data', [App\Http\Controllers\StravaController::class, 'getStravaData'])->name('strava.data');
+Route::middleware('auth')->get('/strava-data', [App\Http\Controllers\StravaController::class, 'getStravaData'])->name('strava.data');
 require __DIR__.'/auth.php';
