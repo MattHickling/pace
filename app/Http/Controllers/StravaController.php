@@ -136,26 +136,24 @@ class StravaController extends Controller
 
     public function getStravaData()
     {
+        // dd(__LINE__);
         $user = Auth::user();
         if (! $user) {
             abort(403, 'User not authenticated.');
         }
 
         $strava = Strava::where('user_id', $user->id)->first();
-       
+        // dd($strava);
         if (! $strava) {
             abort(404, 'Strava account not found for user.');
         }
-
-        $user_id = $strava->strava_athlete_id;
-        // dd($user_id);
         $response = Http::withToken($strava->access_token)
             ->acceptJson()
-            ->get("https://www.strava.com/api/v3/athlete/{$user_id}/stats");
+            ->get("https://www.strava.com/api/v3/athlete/{$strava->strava_athlete_id}/stats");
 
-        if ($response->failed()) {
-            abort(500, 'Unable to fetch Strava data: ' . $response->body());
-        }
+        // if ($response->failed()) {
+        //     abort(500, 'Unable to fetch Strava data: ' . $response->body());
+        // }
 
         return response()->json($response->json());
     }
